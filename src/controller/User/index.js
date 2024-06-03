@@ -1,6 +1,7 @@
 import { compare, hash } from "bcrypt";
 import userModel from "../../model/User/index.js";
 import jwt from "jsonwebtoken";
+import TokenModel from "../../model/Token/index.js";
 const userController = {
   getAll: async (req, res) => {
     try {
@@ -81,11 +82,12 @@ const userController = {
       const token = jwt.sign(data, process.env.JWT_SECRET_KEY, {
         expiresIn: "5h",
       });
-      //   await TokenModel.create({
-      //     token,
-      //   });
+      await TokenModel.create({
+        token,
+      });
       res.status(200).json({ message: "Login Successfully", token });
     } catch (error) {
+      console.log(error);
       res.status(500).json({ message: "Internal Server Error!!" });
     }
   },
