@@ -12,7 +12,7 @@ const productModel = sequelize.define("Products", {
     allowNull: false,
   },
   productStock: {
-    type: DataTypes.STRING,
+    type: DataTypes.INTEGER,
     allowNull: false,
   },
 });

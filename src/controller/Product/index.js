@@ -4,12 +4,13 @@ const productController = {
   getAll: async (req, res) => {
     try {
       const product = await productModel.findAll({
-        include: [{ model: productCategory, attributes: ["name"] }],
+        include: [{ model: productCategory, attributes: ["categoryName"] }],
       });
       res.status(200).json({
         product,
       });
     } catch (error) {
+      console.log(error);
       res.status(500).json({
         message: "Internal Server Error",
       });
@@ -32,10 +33,18 @@ const productController = {
     try {
       const payload = req.body;
       console.log(payload, "payload");
+      const findProduct = await productModel.findOne({
+        where: { productName: payload.productName },
+      });
+      if (findProduct) {
+        return res
+          .status(400)
+          .json({ message: "Product with this name already exists." });
+      }
       const product = new productModel();
-      product.productName = payload.name;
-      product.productStock = payload.stock;
-      product.productRate = payload.rate;
+      product.productName = payload.productName;
+      product.productStock = payload.productStock;
+      product.productRate = payload.productRate;
       await product.save();
       await product.addCategories(payload.categories);
       res.status(200).json({ message: "Product created", product });
@@ -59,13 +68,20 @@ const productController = {
         ? payload.productName
         : product.productName;
       product.productStock += payload.productStock;
-      product.rate = payload.rate ? payload.rate : product.rate;
+      console.log(product.productStock);
+      product.productRate = payload.productRate
+        ? payload.productRate
+        : product.productRate;
+      product.categories = payload.categories
+        ? payload.categories
+        : product.categories;
       product.save();
       res.status(200).json({
         message: "Product Updated",
         product,
       });
     } catch (error) {
+      console.log(error);
       res.status(500).json({
         message: "Internal Server Error",
       });

@@ -40,8 +40,16 @@ const categoryController = {
     try {
       const payload = req.body;
       console.log(payload, "payload");
+      const checkCategory = await productCategory.findOne({
+        where: { categoryName: payload.categoryName },
+      });
+      if (checkCategory) {
+        return res
+          .status(400)
+          .json({ message: "Category with name already exist!" });
+      }
       const category = new productCategory();
-      category.categoryName = payload.name;
+      category.categoryName = payload.categoryName;
       await category.save();
       res.status(200).json({ message: "category created", category });
     } catch (error) {
