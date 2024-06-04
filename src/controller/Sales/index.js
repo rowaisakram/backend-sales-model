@@ -90,71 +90,97 @@ const salesController = {
     }
   },
   update: async (req, res) => {
+    const t = await sequelize.transaction();
     try {
+      const SaleId = parseInt(req.params.id);
       const payload = req.body;
-      const id = parseInt(req.params.id);
-      const sale = await salesModel.findByPk(id);
+      const sale = await salesModel.findByPk(SaleId, {
+        transaction: t,
+      });
       if (!sale) {
-        return res.status(404).json({
-          message: "Error no sales found with this id.",
+        await t.rollback();
+        return res.status(400).json({
+          message: `Sale with id ${SaleId} does not exist!`,
         });
       }
-      sale.English = payload.English ? payload.English : sale.English;
-      sale.Urdu = payload.Urdu ? payload.Urdu : sale.Urdu;
-      sale.Maths = payload.Maths ? payload.Maths : sale.Maths;
-      await sale.save();
-      res.status(200).json({
-        message: "sale data with id updated",
-        sale,
-      });
-    } catch (error) {
-      res.status(500).json({ message: "Internal Server Error" });
-    }
-  },
-  delete: async (req, res) => {
-    try {
-      const id = parseInt(req.params.id);
-      const sale = await salesModel.findByPk(id);
-      if (!sale) {
-        return res.status(404).json({ message: "No sale with this id" });
+      let totalRefundAmount = 0;
+      const returns = [];
+      for (let index = 0; index < payload.returnedProducts.length; index++) {
+        const ele = payload.returnedProducts[index];
+        const product = await productModel.findByPk(ele.ProductId, {
+          transaction: t,
+        });
+        if (!product) {
+          await t.rollback();
+          return res.status(400).json({
+            message: `Product with ${ele.ProductId} id does not exist!`,
+          });
+        }
+        const saleProduct = await salesProduct.findOne({
+          where: { SaleId, ProductId: ele.ProductId },
+          transaction: t,
+        });
+        if (!saleProduct) {
+          await t.rollback();
+          return res.status(400).json({
+            message: `SaleProduct with SaleId ${SaleId} and ProductId ${ele.ProductId} does not exist!`,
+          });
+        }
+        if (ele.productQuantity > saleProduct.productQuantity) {
+          await t.rollback();
+          return res.status(400).json({
+            message: `The product ${product.productName} with Id: ${ele.ProductId} has an invalid return quantity`,
+          });
+        }
+        product.productStock += ele.productQuantity;
+        await product.save({ transaction: t });
+        const refundAmount = saleProduct.productRate * ele.productQuantity;
+        totalRefundAmount += refundAmount;
+        saleProduct.productQuantity -= ele.productQuantity;
+        await saleProduct.save({ transaction: t });
       }
-      await sale.destroy();
-      res.status(200).json({
-        message: "sale with id deleted",
-        id,
-        sale,
-      });
+      sale.totalAmount -= totalRefundAmount;
+      await sale.save({ transaction: t });
+      await t.commit();
+      res.status(200).json({ message: "Product returned", sale });
     } catch (error) {
+      console.log(error);
+      await t.rollback();
       res.status(500).json({ message: "Internal server error" });
     }
   },
-  getSingleName: async (req, res) => {
-    try {
-      const payload = req.body;
-      const sale = await salesProduct.findAll({
-        where: {
-          productName: payload.productName,
-        },
-      });
-      if (sale.length === 0) {
-        return res.status(404).json({ message: "Error product not found" });
-      }
-      let total = 0;
-      let quantity = 0;
-      sale.forEach((product) => {
-        total += product.productQuantity * product.rate;
-        quantity += product.productQuantity;
-      });
-      res.status(200).json({
-        total,
-        quantity,
-        sale,
-      });
-    } catch (error) {
-      console.log(error);
-      res.status(500).json({ message: "Internal Server Error" });
-    }
-  },
+  // getSingleProductSale: async (req, res) => {
+  //   try {
+  //     const payload = req.body;
+  //     const saleProduct = await productModel.findAll({
+  //       where: {
+  //         productName: payload.productName,
+  //       },
+  //     });
+  //     const sale = await salesProduct.findAll({
+  //       where: {
+  //         ProductId: saleProduct.id,
+  //       },
+  //     });
+  //     if (sale.length === 0) {
+  //       return res.status(404).json({ message: "Error product not found" });
+  //     }
+  //     let total = 0;
+  //     let quantity = 0;
+  //     sale.forEach((product) => {
+  //       total += product.productQuantity * product.rate;
+  //       quantity += product.productQuantity;
+  //     });
+  //     res.status(200).json({
+  //       total,
+  //       quantity,
+  //       sale,
+  //     });
+  //   } catch (error) {
+  //     console.log(error);
+  //     res.status(500).json({ message: "Internal Server Error" });
+  //   }
+  // },
 };
 
 export default salesController;

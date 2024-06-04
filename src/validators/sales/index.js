@@ -42,22 +42,30 @@ const salesValidators = {
     next();
   },
   update: (req, res, next) => {
-    const schema = Joi.object({
-      productName: Joi.string().messages({
-        "string.base": "Name should be string",
+    const salesProductschema = Joi.object({
+      ProductId: Joi.number().greater(0).required().messages({
+        "number.base": "Product Id should be number",
+        "number.greater": "Product Id should be greater than 0",
+        "any.required": "Product is required",
       }),
-      productStock: Joi.number().greater(0).messages({
+      productQuantity: Joi.number().greater(0).required().messages({
         "number.base": "Stock should be number",
         "number.greater": "Stock should be greater than 0",
+        "any.required": "Stock is required",
       }),
-      productRate: Joi.number().messages({
-        "number.base": "Rate should be number",
-      }),
-      categories: Joi.array().items(Joi.number()).min(1).messages({
-        "array.base": "Categories should be an array",
-        "array.min": "Categories should contain at least one item",
-        "array.includes": "Categories must only contain numbers",
-      }),
+    });
+    const schema = Joi.object({
+      returnedProducts: Joi.array()
+        .items(salesProductschema)
+        .min(1)
+        .required()
+        .messages({
+          "array.base": "Returned Products should be an array",
+          "array.min": "Returned Products should contain at least one item",
+          "array.includes":
+            "Returned Products must only contain valid product objects",
+          "any.required": "Returned Products are required",
+        }),
     });
     const { value, error } = schema.validate(req.body);
     console.log(value);

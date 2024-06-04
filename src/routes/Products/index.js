@@ -13,6 +13,7 @@ productRouter.get(
 );
 productRouter.post(
   "/product",
+  authenticateToken,
   checkRole([roles.ADMIN]),
   productValidators.create,
   productController.create

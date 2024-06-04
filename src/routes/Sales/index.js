@@ -24,6 +24,12 @@ salesRouter.post(
   salesValidators.create,
   salesController.create
 );
-// salesRouter.post("/", salesController.signIn);
+salesRouter.put(
+  "/sale/:id",
+  authenticateToken,
+  checkRole([roles.ADMIN]),
+  salesValidators.update,
+  salesController.update
+);
 
 export default salesRouter;
