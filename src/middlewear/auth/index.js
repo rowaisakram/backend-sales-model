@@ -17,8 +17,8 @@ const authenticateToken = async (req, res, next) => {
   }
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET_Key);
-    console.log(decoded);
-    req.user = decoded;
+    console.log("userinfo", decoded);
+    res.locals.user = decoded;
   } catch (error) {
     console.log(error);
     return res.status(401).json({ message: "Invalid Authorization" });

@@ -1,5 +1,4 @@
 import sequelize from "../../db/config.js";
-import productCategory from "../../model/Products/category.js";
 import productModel from "../../model/Products/index.js";
 import salesModel from "../../model/Sales/index.js";
 import salesProduct from "../../model/Sales/salesProduct.js";
@@ -38,20 +37,22 @@ const salesController = {
       res.status(500).json({ message: "Internal Server Error" });
     }
   },
-
   create: async (req, res) => {
     const t = await sequelize.transaction();
     try {
       const payload = req.body;
+      const UserId = res.locals.user.id;
+      console.log("userId", UserId);
       console.log("payload", payload);
-
       let totalAmount = 0;
       payload.salesProducts.forEach((ele) => {
         totalAmount += ele.productRate * ele.productQuantity;
       });
       console.log(totalAmount);
-      const sale = await salesModel.create({ totalAmount }, { transaction: t });
-
+      const sale = await salesModel.create(
+        { totalAmount, UserId },
+        { transaction: t }
+      );
       const salesProducts = [];
       for (let index = 0; index < payload.salesProducts.length; index++) {
         const ele = payload.salesProducts[index];

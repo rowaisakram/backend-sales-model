@@ -1,5 +1,6 @@
 import { DataTypes } from "sequelize";
 import sequelize from "../../db/config.js";
+import salesModel from "../Sales/index.js";
 const userModel = sequelize.define("Users", {
   firstName: {
     type: DataTypes.STRING,
@@ -18,6 +19,12 @@ const userModel = sequelize.define("Users", {
     type: DataTypes.STRING,
     allowNull: false,
   },
+  role: {
+    type: DataTypes.STRING,
+    allowNull: false,
+  },
 });
 
 export default userModel;
+userModel.hasMany(salesModel);
+salesModel.belongsTo(userModel);

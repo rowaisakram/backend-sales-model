@@ -1,4 +1,5 @@
 import Joi from "joi";
+import { roles } from "../../roles/index.js";
 const authValidators = {
   signUp: (req, res, next) => {
     const strongPasswordRegex =
@@ -36,6 +37,13 @@ const authValidators = {
           "Password must be strong. At least one upper case alphabet. At least one lower case alphabet. At least one digit. At least one special character. Minimum eight in length",
         "any.required": "Password is required",
       }),
+      role: Joi.string()
+        .valid(roles.ADMIN, roles.CUSTOMER)
+        .required()
+        .messages({
+          "any.only": `Role must be one of [${roles.ADMIN}, ${roles.CUSTOMER}]`,
+          "any.required": "Role is required",
+        }),
     });
     const { value, error } = schema.validate(req.body);
     console.log(value);
@@ -53,6 +61,32 @@ const authValidators = {
         "any.required": "Email is required",
       }),
       password: Joi.required().messages({
+        "any.required": "Password is required",
+      }),
+    });
+    const { value, error } = schema.validate(req.body);
+    console.log(value);
+    if (error) {
+      return res.status(400).json({
+        message: "Invalid Data",
+        error,
+      });
+    }
+    next();
+  },
+  update: (req, res, next) => {
+    const strongPasswordRegex =
+      /^(?=.*?[A-Z])(?=.*?[a-z])(?=.*?[0-9])(?=.*?[#?!@$%^&*-]).{8,20}$/;
+    const schema = Joi.object({
+      email: Joi.required().messages({
+        "any.required": "Email is required",
+      }),
+      oldPassword: Joi.required().messages({
+        "any.required": "Password is required",
+      }),
+      newPassword: Joi.string().regex(strongPasswordRegex).required().messages({
+        "string.pattern.base":
+          "Password must be strong. At least one upper case alphabet. At least one lower case alphabet. At least one digit. At least one special character. Minimum eight in length",
         "any.required": "Password is required",
       }),
     });
