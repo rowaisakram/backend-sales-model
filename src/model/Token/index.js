@@ -1,5 +1,6 @@
 import { DataTypes } from "sequelize";
 import sequelize from "../../db/config.js";
+import userModel from "../User/index.js";
 
 const tokenModel = sequelize.define("Token", {
   token: {
@@ -9,3 +10,6 @@ const tokenModel = sequelize.define("Token", {
 });
 
 export default tokenModel;
+
+tokenModel.hasOne(userModel);
+userModel.belongsTo(tokenModel);

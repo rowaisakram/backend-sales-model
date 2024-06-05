@@ -104,7 +104,6 @@ const salesController = {
         });
       }
       let totalRefundAmount = 0;
-      const returns = [];
       for (let index = 0; index < payload.returnedProducts.length; index++) {
         const ele = payload.returnedProducts[index];
         const product = await productModel.findByPk(ele.ProductId, {

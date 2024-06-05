@@ -2,6 +2,7 @@ import { compare, hash } from "bcrypt";
 import userModel from "../../model/User/index.js";
 import jwt from "jsonwebtoken";
 import TokenModel from "../../model/Token/index.js";
+import sendEmail from "../../utilities/email/index.js";
 
 const userController = {
   getAll: async (req, res) => {
@@ -51,8 +52,22 @@ const userController = {
         password: hpassowrd,
         role: payload.role,
       });
-      res.status(201).json({ message: "User Created Successfully!" });
+      const data = {
+        id: newUser.id,
+        email: payload.email,
+        role: payload.role,
+      };
+      const token = jwt.sign(data, process.env.JWT_SECRET_KEY, {
+        expiresIn: "5h",
+      });
+      await TokenModel.create({
+        token,
+      });
+      const message = `${process.env.BASE_URL}/user/verify/${newUser.id}/${token}`;
+      await sendEmail(payload.email, "Verify Email", message);
+      res.status(201).json({ message: "An Email was Send!" });
     } catch (error) {
+      console.log(error);
       res.status(500).json({ message: "Internal Server Error!!" });
     }
   },
@@ -73,6 +88,11 @@ const userController = {
       if (!comaprePassword) {
         return res.status(401).json({
           message: "Invalid Credentials!",
+        });
+      }
+      if (user.verified === false) {
+        return res.status(401).json({
+          message: "Email not verified",
         });
       }
       const data = {

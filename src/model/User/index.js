@@ -23,6 +23,10 @@ const userModel = sequelize.define("Users", {
     type: DataTypes.STRING,
     allowNull: false,
   },
+  verified: {
+    type: DataTypes.BOOLEAN,
+    defaultValue: false,
+  },
 });
 
 export default userModel;
