@@ -6,8 +6,9 @@ const emailVerification = async (req, res) => {
     const user = await userModel.findOne({ where: { id: req.params.id } });
     if (!user) return res.status(400).send("Invalid link");
     const token = await tokenModel.findOne({
-      where: { token: req.params.token },
+      where: { token: req.params.token, UserId: req.params.id },
     });
+    console.log()
     if (!token) return res.status(400).send("Invalid link");
     user.verified = true;
     await user.save();

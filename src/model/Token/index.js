@@ -11,5 +11,7 @@ const tokenModel = sequelize.define("Token", {
 
 export default tokenModel;
 
-tokenModel.hasOne(userModel);
-userModel.belongsTo(tokenModel);
+userModel.hasOne(tokenModel);
+tokenModel.belongsTo(userModel);
+// tokenModel.hasOne(userModel);
+// userModel.belongsTo(tokenModel);

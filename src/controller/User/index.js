@@ -3,6 +3,7 @@ import userModel from "../../model/User/index.js";
 import jwt from "jsonwebtoken";
 import TokenModel from "../../model/Token/index.js";
 import sendEmail from "../../utilities/email/index.js";
+import tokenModel from "../../model/Token/index.js";
 
 const userController = {
   getAll: async (req, res) => {
@@ -62,6 +63,7 @@ const userController = {
       });
       await TokenModel.create({
         token,
+        UserId: newUser.id,
       });
       const message = `${process.env.BASE_URL}/user/verify/${newUser.id}/${token}`;
       await sendEmail(payload.email, "Verify Email", message);
@@ -95,6 +97,12 @@ const userController = {
           message: "Email not verified",
         });
       }
+      const existingToken = await tokenModel.findOne({
+        where: { UserId: user.id },
+      });
+      if (existingToken) {
+        await existingToken.destroy();
+      }
       const data = {
         id: user.id,
         email: user.email,
@@ -103,9 +111,12 @@ const userController = {
       const token = jwt.sign(data, process.env.JWT_SECRET_KEY, {
         expiresIn: "5h",
       });
+
       await TokenModel.create({
         token,
+        UserId: user.id,
       });
+
       res.status(200).json({ message: "Login Successfully", token });
     } catch (error) {
       console.log(error);
