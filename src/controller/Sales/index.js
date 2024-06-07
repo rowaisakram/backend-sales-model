@@ -162,16 +162,21 @@ const salesController = {
         return res.status(404).json({ message: "Error product not found" });
       }
       const productName = saleProduct.productName;
-      let total = 0;
-      let quantity = 0;
+      const stock = saleProduct.productStock;
+      const stockPrice = saleProduct.productRate;
+      let totalSalePrice = 0;
+      let saleQuantity = 0;
+
       sale.forEach((product) => {
-        total += product.productQuantity * product.productRate;
-        quantity += product.productQuantity;
+        totalSalePrice += product.productQuantity * product.productRate;
+        saleQuantity += product.productQuantity;
       });
       res.status(200).json({
         productName,
-        total,
-        quantity,
+        stock,
+        stockPrice,
+        totalSalePrice,
+        saleQuantity,
         sale,
       });
     } catch (error) {
