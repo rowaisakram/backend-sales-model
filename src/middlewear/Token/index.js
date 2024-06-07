@@ -3,10 +3,10 @@ import userModel from "../../model/User/index.js";
 
 const emailVerification = async (req, res) => {
   try {
-    const user = await userModel.findOne({ id: req.params.id });
+    const user = await userModel.findOne({ where: { id: req.params.id } });
     if (!user) return res.status(400).send("Invalid link");
     const token = await tokenModel.findOne({
-      token: req.params.token,
+      where: { token: req.params.token },
     });
     if (!token) return res.status(400).send("Invalid link");
     user.verified = true;

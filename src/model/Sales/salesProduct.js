@@ -5,11 +5,11 @@ import productModel from "../Products/index.js";
 
 const salesProduct = sequelize.define("SaleProduct", {
   productQuantity: {
-    type: DataTypes.STRING,
+    type: DataTypes.INTEGER,
     allowNull: false,
   },
   productRate: {
-    type: DataTypes.STRING,
+    type: DataTypes.DOUBLE,
     allowNull: false,
   },
 });

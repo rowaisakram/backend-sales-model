@@ -31,5 +31,11 @@ salesRouter.put(
   salesValidators.update,
   salesController.update
 );
+salesRouter.get(
+  "/saleproduct/:id",
+  authenticateToken,
+  checkRole([roles.ADMIN]),
+  salesController.getSingleProductSale
+);
 
 export default salesRouter;

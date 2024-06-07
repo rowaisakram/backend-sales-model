@@ -148,38 +148,37 @@ const salesController = {
       res.status(500).json({ message: "Internal server error" });
     }
   },
-  // getSingleProductSale: async (req, res) => {
-  //   try {
-  //     const payload = req.body;
-  //     const saleProduct = await productModel.findAll({
-  //       where: {
-  //         productName: payload.productName,
-  //       },
-  //     });
-  //     const sale = await salesProduct.findAll({
-  //       where: {
-  //         ProductId: saleProduct.id,
-  //       },
-  //     });
-  //     if (sale.length === 0) {
-  //       return res.status(404).json({ message: "Error product not found" });
-  //     }
-  //     let total = 0;
-  //     let quantity = 0;
-  //     sale.forEach((product) => {
-  //       total += product.productQuantity * product.rate;
-  //       quantity += product.productQuantity;
-  //     });
-  //     res.status(200).json({
-  //       total,
-  //       quantity,
-  //       sale,
-  //     });
-  //   } catch (error) {
-  //     console.log(error);
-  //     res.status(500).json({ message: "Internal Server Error" });
-  //   }
-  // },
+  getSingleProductSale: async (req, res) => {
+    try {
+      const id = req.params.id;
+      console.log(id);
+      const saleProduct = await productModel.findByPk(id);
+      const sale = await salesProduct.findAll({
+        where: {
+          ProductId: saleProduct.id,
+        },
+      });
+      if (sale.length === 0) {
+        return res.status(404).json({ message: "Error product not found" });
+      }
+      const productName = saleProduct.productName;
+      let total = 0;
+      let quantity = 0;
+      sale.forEach((product) => {
+        total += product.productQuantity * product.productRate;
+        quantity += product.productQuantity;
+      });
+      res.status(200).json({
+        productName,
+        total,
+        quantity,
+        sale,
+      });
+    } catch (error) {
+      console.log(error);
+      res.status(500).json({ message: "Internal Server Error" });
+    }
+  },
 };
 
 export default salesController;
